@@ -33,6 +33,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
     public void startGame(){
         ship = new Ship(SCREEN_WIDTH/2, SCREEN_HEIGHT - 2*SCREEN_UNIT);
         timer = new Timer(DELAY,this);
+        running = true;
         timer.start();
         aliens = new ArrayList<>();
         for(int i = 0; i < DEF_ALIENS_NUMBER ; i++){
@@ -49,21 +50,24 @@ public class InvadersPanel extends JPanel implements ActionListener {
     public void draw(Graphics g){
         Graphics2D g2d = (Graphics2D)g;
 
-        //Draw ship
-        g2d.setColor(Color.blue);
-        g2d.fillRect(ship.getX(),ship.getY(),2*SCREEN_UNIT, 2*SCREEN_UNIT);
+            //Draw ship
+            g2d.setColor(Color.blue);
+            g2d.fillRect(ship.getX(), ship.getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
 
-        //Draw aliens
-        g2d.setColor(Color.gray);
-        for(int i = 0; i< aliens.size(); i++){
-            g2d.fillOval(aliens.get(i).getX(),aliens.get(i).getY(),2*SCREEN_UNIT, 2*SCREEN_UNIT);
-        }
+            //Draw aliens
+            g2d.setColor(Color.gray);
+            if(aliens.size()>0)
+                for (int i = 0; i < aliens.size(); i++) {
+                    g2d.fillOval(aliens.get(i).getX(), aliens.get(i).getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
+                }
 
-        //Draw bullets
-        g2d.setColor(Color.green);
-        for(int i = 0; i < ship.getBullets().size(); i++){
-            g2d.fillRect(ship.getBullets().get(i).getX(),ship.getBullets().get(i).getY(),5,15);
-        }
+            //Draw bullets
+            g2d.setColor(Color.green);
+            if(ship.getBullets().size() > 0)
+                for (int i = 0; i < ship.getBullets().size(); i++) {
+                    g2d.fillRect(ship.getBullets().get(i).getX(), ship.getBullets().get(i).getY(), 5, 15);
+                }
+
     }
 
     public void moveAliens(){
@@ -92,10 +96,46 @@ public class InvadersPanel extends JPanel implements ActionListener {
         }
     }
 
+    public void checkCollisions(){
+        if(aliensDirection > 0) {
+            for (int i = 0; i < aliens.size(); i++) {
+                Alien alien = aliens.get(i);
+                if (alien.getX() + SCREEN_UNIT == ship.getX() && alien.getY() + (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
+                    gameOver();
+                }
+            }
+        } else{
+            for (int i = 0; i < aliens.size(); i++) {
+                Alien alien = aliens.get(i);
+                if (alien.getX() + SCREEN_UNIT == ship.getX()+2*SCREEN_UNIT && (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
+                    gameOver();
+                }
+            }
+        }
+        for (int i = 0; i < aliens.size(); i++) {
+            Alien alien = aliens.get(i);
+            for(int j = 0; j < ship.getBullets().size(); j++) {
+                Bullet bullet = ship.getBullets().get(j);
+                if(Math.abs(alien.getX() - bullet.getX()) <= 2*SCREEN_UNIT && Math.abs(alien.getY() - bullet.getY()) <= 2*SCREEN_UNIT){
+                    aliens.remove(alien);
+                    ship.getBullets().remove(bullet);
+                }
+            }
+        }
+
+    }
+
+    public void gameOver(){
+        running = false;
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
-        moveAliens();
-        moveBullets();
+        if(running){
+            moveAliens();
+            moveBullets();
+            checkCollisions();
+        }
         repaint();
     }
 

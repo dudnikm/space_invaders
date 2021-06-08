@@ -16,7 +16,7 @@ public class Alien {
     }
 
     public void moveDown(){
-        this.y += 10;
+        this.y += 20;
     }
 
     public int getX() {
