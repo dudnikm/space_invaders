@@ -1,25 +1,22 @@
 import java.awt.*;
-import java.util.ArrayList;
 
-public class Ship {
+public class Alien {
 
     private int x;
     private int y;
     private Image img;
-    private ArrayList<Bullet> bullets;
 
-    public Ship(int x, int y) {
+    public Alien(int x, int y){
         this.x = x;
         this.y = y;
-        bullets = new ArrayList<>();
     }
 
-    public void shot(){
-        bullets.add(new Bullet(this.x+25,this.y));
+    public void move(int dir){
+        this.x += dir*5;
     }
 
-    public ArrayList<Bullet> getBullets() {
-        return bullets;
+    public void moveDown(){
+        this.y += 10;
     }
 
     public int getX() {
