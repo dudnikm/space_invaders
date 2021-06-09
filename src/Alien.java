@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 
 public class Alien {
@@ -9,6 +10,7 @@ public class Alien {
     public Alien(int x, int y){
         this.x = x;
         this.y = y;
+        img = new ImageIcon("src/alien.png").getImage();
     }
 
     public void move(int dir){

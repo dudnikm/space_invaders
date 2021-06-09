@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -12,6 +13,8 @@ public class Ship {
         this.x = x;
         this.y = y;
         bullets = new ArrayList<>();
+        img = new ImageIcon("src/ship.png").getImage();
+
     }
 
     public void shot(){
@@ -34,9 +37,6 @@ public class Ship {
         return y;
     }
 
-    public void setY(int y) {
-        this.y = y;
-    }
 
     public Image getImg() {
         return img;

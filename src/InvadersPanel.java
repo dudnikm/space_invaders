@@ -11,6 +11,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
     final int SCREEN_HEIGHT = 500;
     final int SCREEN_WIDTH = 500;
     final int SCREEN_UNIT = 25;
+    final int ALIEN_WIDTH = 50;
     final int DELAY = 150;
     final int DEF_ALIENS_NUMBER = 8;
 
@@ -20,12 +21,14 @@ public class InvadersPanel extends JPanel implements ActionListener {
     Ship ship;
     ArrayList<Alien> aliens;
     int aliensDirection;
+    Image bgImage;
 
     InvadersPanel(){
         random = new Random();
         this.setPreferredSize(new Dimension(SCREEN_WIDTH,SCREEN_HEIGHT));
         this.setBackground(Color.black);
         this.addKeyListener(new MyKeyAdapter());
+        bgImage = new ImageIcon("src/background.jpg").getImage();
         this.setFocusable(true);
         startGame();
     }
@@ -36,8 +39,14 @@ public class InvadersPanel extends JPanel implements ActionListener {
         running = true;
         timer.start();
         aliens = new ArrayList<>();
-        for(int i = 0; i < DEF_ALIENS_NUMBER ; i++){
-            aliens.add(new Alien(i*2*SCREEN_UNIT + SCREEN_UNIT, SCREEN_UNIT));
+
+        for(int j = 1;j<4;j++) {
+            for (int i = 0; i < SCREEN_WIDTH / ALIEN_WIDTH - 2; i++) {
+                if(j%2 == 0)
+                    aliens.add(new Alien(i * 2 * SCREEN_UNIT + (SCREEN_UNIT - 10) * j , j*(SCREEN_UNIT+5)));
+                else
+                    aliens.add(new Alien(i * 2 * SCREEN_UNIT , j*(SCREEN_UNIT+5)));
+            }
         }
         aliensDirection = 1;
     }
@@ -49,20 +58,24 @@ public class InvadersPanel extends JPanel implements ActionListener {
 
     public void draw(Graphics g){
         Graphics2D g2d = (Graphics2D)g;
+        g2d.drawImage(bgImage,0,0,null);
 
             //Draw ship
             g2d.setColor(Color.blue);
-            g2d.fillRect(ship.getX(), ship.getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
+            //g2d.fillRect(ship.getX(), ship.getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
+            g2d.drawImage(ship.getImg(),ship.getX(), ship.getY(),null);
 
             //Draw aliens
             g2d.setColor(Color.gray);
             if(aliens.size()>0)
                 for (int i = 0; i < aliens.size(); i++) {
-                    g2d.fillOval(aliens.get(i).getX(), aliens.get(i).getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
+                    Alien alien = aliens.get(i);
+                    //g2d.fillOval(aliens.get(i).getX(), aliens.get(i).getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
+                    g2d.drawImage(alien.getImg(),alien.getX(),alien.getY(),null);
                 }
 
             //Draw bullets
-            g2d.setColor(Color.green);
+            g2d.setColor(Color.red);
             if(ship.getBullets().size() > 0)
                 for (int i = 0; i < ship.getBullets().size(); i++) {
                     g2d.fillRect(ship.getBullets().get(i).getX(), ship.getBullets().get(i).getY(), 5, 15);
@@ -74,16 +87,18 @@ public class InvadersPanel extends JPanel implements ActionListener {
         for(int i = 0; i< aliens.size(); i++){
             aliens.get(i).move(aliensDirection);
         }
-        if(aliensDirection > 0 && (aliens.get(aliens.size()-1).getX() + 2*SCREEN_UNIT) >= SCREEN_WIDTH){
-            for(int i = 0; i< aliens.size(); i++){
-                aliens.get(i).moveDown();
+        for(int j = 0; j< aliens.size(); j++) {
+            if (aliensDirection > 0 && (aliens.get(j).getX() + ALIEN_WIDTH) >= SCREEN_WIDTH) {
+                for (int i = 0; i < aliens.size(); i++) {
+                    aliens.get(i).moveDown();
+                }
+                aliensDirection = -1;
+            } else if (aliensDirection < 0 && aliens.get(j).getX() <= 0) {
+                for (int i = 0; i < aliens.size(); i++) {
+                    aliens.get(i).moveDown();
+                }
+                aliensDirection = 1;
             }
-            aliensDirection = -1;
-        }else if(aliensDirection < 0 && aliens.get(0).getX() <= 0){
-            for(int i = 0; i< aliens.size(); i++){
-                aliens.get(i).moveDown();
-            }
-            aliensDirection = 1;
         }
     }
 
@@ -116,7 +131,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
             Alien alien = aliens.get(i);
             for(int j = 0; j < ship.getBullets().size(); j++) {
                 Bullet bullet = ship.getBullets().get(j);
-                if(Math.abs(alien.getX() - bullet.getX()) <= 2*SCREEN_UNIT && Math.abs(alien.getY() - bullet.getY()) <= 2*SCREEN_UNIT){
+                if(bullet.getX() - alien.getX() <= 2*SCREEN_UNIT && bullet.getX() - alien.getX() > 0 && Math.abs(alien.getY() - bullet.getY()) <= 2*SCREEN_UNIT){
                     aliens.remove(alien);
                     ship.getBullets().remove(bullet);
                 }
