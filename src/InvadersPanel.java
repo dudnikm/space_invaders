@@ -12,8 +12,8 @@ public class InvadersPanel extends JPanel implements ActionListener {
     final int SCREEN_WIDTH = 500;
     final int SCREEN_UNIT = 25;
     final int ALIEN_WIDTH = 50;
+    final int SHIP_WIDTH = 50;
     final int DELAY = 150;
-    final int DEF_ALIENS_NUMBER = 8;
 
     Timer timer;
     Random random;
@@ -22,6 +22,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
     ArrayList<Alien> aliens;
     int aliensDirection;
     Image bgImage;
+    boolean win;
 
     InvadersPanel(){
         random = new Random();
@@ -39,6 +40,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
         running = true;
         timer.start();
         aliens = new ArrayList<>();
+        win = false;
 
         for(int j = 1;j<4;j++) {
             for (int i = 0; i < SCREEN_WIDTH / ALIEN_WIDTH - 2; i++) {
@@ -59,43 +61,43 @@ public class InvadersPanel extends JPanel implements ActionListener {
     public void draw(Graphics g){
         Graphics2D g2d = (Graphics2D)g;
         g2d.drawImage(bgImage,0,0,null);
-
+        if(running) {
             //Draw ship
             g2d.setColor(Color.blue);
-            //g2d.fillRect(ship.getX(), ship.getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
-            g2d.drawImage(ship.getImg(),ship.getX(), ship.getY(),null);
+            g2d.drawImage(ship.getImg(), ship.getX(), ship.getY(), null);
 
             //Draw aliens
             g2d.setColor(Color.gray);
-            if(aliens.size()>0)
-                for (int i = 0; i < aliens.size(); i++) {
-                    Alien alien = aliens.get(i);
-                    //g2d.fillOval(aliens.get(i).getX(), aliens.get(i).getY(), 2 * SCREEN_UNIT, 2 * SCREEN_UNIT);
-                    g2d.drawImage(alien.getImg(),alien.getX(),alien.getY(),null);
+            if (aliens.size() > 0)
+                for (Alien alien :aliens) {
+                    g2d.drawImage(alien.getImg(), alien.getX(), alien.getY(), null);
                 }
 
             //Draw bullets
             g2d.setColor(Color.red);
-            if(ship.getBullets().size() > 0)
-                for (int i = 0; i < ship.getBullets().size(); i++) {
-                    g2d.fillRect(ship.getBullets().get(i).getX(), ship.getBullets().get(i).getY(), 5, 15);
+            if (ship.getBullets().size() > 0)
+                for (Bullet bullet : ship.getBullets()) {
+                    g2d.fillRect(bullet.getX(), bullet.getY(), Bullet.BULLET_W, Bullet.BULLET_H);
                 }
+        } else{
+            gameOver(g);
+        }
 
     }
 
     public void moveAliens(){
-        for(int i = 0; i< aliens.size(); i++){
-            aliens.get(i).move(aliensDirection);
+        for(Alien alien : aliens){
+            alien.move(aliensDirection);
         }
-        for(int j = 0; j< aliens.size(); j++) {
-            if (aliensDirection > 0 && (aliens.get(j).getX() + ALIEN_WIDTH) >= SCREEN_WIDTH) {
-                for (int i = 0; i < aliens.size(); i++) {
-                    aliens.get(i).moveDown();
+        for(Alien alien :aliens) {
+            if (aliensDirection > 0 && (alien.getX() + ALIEN_WIDTH) >= SCREEN_WIDTH) {
+                for (Alien alien2 : aliens) {
+                    alien2.moveDown();
                 }
                 aliensDirection = -1;
-            } else if (aliensDirection < 0 && aliens.get(j).getX() <= 0) {
-                for (int i = 0; i < aliens.size(); i++) {
-                    aliens.get(i).moveDown();
+            } else if (aliensDirection < 0 && alien.getX() <= 0) {
+                for (Alien alien2 : aliens) {
+                    alien2.moveDown();
                 }
                 aliensDirection = 1;
             }
@@ -105,7 +107,7 @@ public class InvadersPanel extends JPanel implements ActionListener {
     public void moveBullets(){
         for(int i = 0; i < ship.getBullets().size(); i++){
             Bullet bullet = ship.getBullets().get(i);
-            bullet.setY(bullet.getY()-15);
+            bullet.setY(bullet.getY()-20);
             if(bullet.getY() < 0)
                 ship.getBullets().remove(bullet);
         }
@@ -113,35 +115,49 @@ public class InvadersPanel extends JPanel implements ActionListener {
 
     public void checkCollisions(){
         if(aliensDirection > 0) {
-            for (int i = 0; i < aliens.size(); i++) {
-                Alien alien = aliens.get(i);
+            for (Alien alien : aliens) {
                 if (alien.getX() + SCREEN_UNIT == ship.getX() && alien.getY() + (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
-                    gameOver();
+                    running = false;
+                    break;
                 }
             }
         } else{
-            for (int i = 0; i < aliens.size(); i++) {
-                Alien alien = aliens.get(i);
+            for (Alien alien : aliens) {
                 if (alien.getX() + SCREEN_UNIT == ship.getX()+2*SCREEN_UNIT && (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
-                    gameOver();
+                    running = false;
+                    break;
                 }
             }
         }
-        for (int i = 0; i < aliens.size(); i++) {
+        for (int i = 0; i < aliens.size();i++) {
             Alien alien = aliens.get(i);
             for(int j = 0; j < ship.getBullets().size(); j++) {
                 Bullet bullet = ship.getBullets().get(j);
                 if(bullet.getX() - alien.getX() <= 2*SCREEN_UNIT && bullet.getX() - alien.getX() > 0 && Math.abs(alien.getY() - bullet.getY()) <= 2*SCREEN_UNIT){
                     aliens.remove(alien);
                     ship.getBullets().remove(bullet);
+                    if(aliens.size() == 0){
+                        running = false;
+                        win = true;
+                    }
                 }
             }
         }
 
     }
 
-    public void gameOver(){
-        running = false;
+    public void gameOver(Graphics g){
+        if(win){
+            g.setColor(Color.green);
+            g.setFont(new Font("Ink Free", Font.BOLD, 80));
+            FontMetrics metrics1 = g.getFontMetrics();
+            g.drawString("VICTORY!", (SCREEN_WIDTH - metrics1.stringWidth("VICTORY!")) / 2, SCREEN_HEIGHT / 2);
+        }else {
+            g.setColor(Color.red);
+            g.setFont(new Font("Ink Free", Font.BOLD, 80));
+            FontMetrics metrics1 = g.getFontMetrics();
+            g.drawString("GAME OVER", (SCREEN_WIDTH - metrics1.stringWidth("GAME OVER")) / 2, SCREEN_HEIGHT / 2);
+        }
     }
 
     @Override
@@ -159,12 +175,12 @@ public class InvadersPanel extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()){
                 case KeyEvent.VK_A:
-                    ship.setX(ship.getX()-15);
-                    System.out.println("X--");
+                    if(ship.getX()>0)
+                        ship.setX(ship.getX()-15);
                     break;
                 case KeyEvent.VK_D:
-                    ship.setX(ship.getX()+15);
-                    System.out.println("X++");
+                    if(ship.getX()+ SHIP_WIDTH < SCREEN_WIDTH)
+                        ship.setX(ship.getX()+15);
                     break;
                 case KeyEvent.VK_SPACE:
                     ship.shot();

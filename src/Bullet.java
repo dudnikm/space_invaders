@@ -1,4 +1,8 @@
 public class Bullet {
+
+    public static final int BULLET_W = 4;
+    public static final int BULLET_H = 10;
+
     private int x;
     private int y;
 
@@ -9,10 +13,6 @@ public class Bullet {
 
     public int getX() {
         return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
     }
 
     public int getY() {

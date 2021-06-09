@@ -18,7 +18,7 @@ public class Ship {
     }
 
     public void shot(){
-        bullets.add(new Bullet(this.x+25,this.y));
+        bullets.add(new Bullet(this.x+23,this.y));
     }
 
     public ArrayList<Bullet> getBullets() {
@@ -42,7 +42,4 @@ public class Ship {
         return img;
     }
 
-    public void setImg(Image img) {
-        this.img = img;
-    }
 }
