@@ -114,26 +114,25 @@ public class InvadersPanel extends JPanel implements ActionListener {
     }
 
     public void checkCollisions(){
-        if(aliensDirection > 0) {
-            for (Alien alien : aliens) {
-                if (alien.getX() + SCREEN_UNIT == ship.getX() && alien.getY() + (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
-                    running = false;
-                    break;
-                }
-            }
-        } else{
-            for (Alien alien : aliens) {
-                if (alien.getX() + SCREEN_UNIT == ship.getX()+2*SCREEN_UNIT && (ship.getY() - (alien.getY() + 2 * SCREEN_UNIT)) < 2*SCREEN_UNIT) {
-                    running = false;
-                    break;
-                }
+
+        //Checking if an alien reached the ship
+        Rectangle shipRect = new Rectangle(ship.getX(),ship.getY(),ship.getImg().getWidth(null),ship.getImg().getHeight(null));
+        for (Alien alien : aliens) {
+            Rectangle alienRect = new Rectangle(alien.getX(),alien.getY(),alien.getImg().getWidth(null),alien.getImg().getHeight(null));
+            if (alienRect.intersects(shipRect)) {
+                running = false;
+                break;
             }
         }
+
+        //Checking if bullet hit an alien
         for (int i = 0; i < aliens.size();i++) {
             Alien alien = aliens.get(i);
+            Rectangle alienRect = new Rectangle(alien.getX(),alien.getY(),alien.getImg().getWidth(null),alien.getImg().getHeight(null));
             for(int j = 0; j < ship.getBullets().size(); j++) {
                 Bullet bullet = ship.getBullets().get(j);
-                if(bullet.getX() - alien.getX() <= 2*SCREEN_UNIT && bullet.getX() - alien.getX() > 0 && Math.abs(alien.getY() - bullet.getY()) <= 2*SCREEN_UNIT){
+                Rectangle bulletRect = new Rectangle(bullet.getX(),bullet.getY(),Bullet.BULLET_W, Bullet.BULLET_H);
+                if(alienRect.intersects(bulletRect)){
                     aliens.remove(alien);
                     ship.getBullets().remove(bullet);
                     if(aliens.size() == 0){
